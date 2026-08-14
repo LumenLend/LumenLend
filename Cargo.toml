@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/lending_pool",
+    "contracts/ltoken",
+    "contracts/interest_rate_model",
+    "contracts/liquidation_engine",
+    "contracts/price_oracle",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+soroban-sdk = { version = "21.0.0", features = ["testutils"] }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true

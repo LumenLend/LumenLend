@@ -1,0 +1,35 @@
+# Development plan (local only)
+Plan.md
+
+# Rust / Cargo
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Soroban / WASM build artifacts
+*.wasm
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Node / pnpm (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.pnpm-store/
+frontend/coverage/
+
+# Generated contract bindings (regenerated via scripts/generate_bindings.sh)
+frontend/src/lib/contracts/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
