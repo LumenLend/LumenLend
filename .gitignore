@@ -3,7 +3,6 @@ Plan.md
 
 # Rust / Cargo
 target/
-Cargo.lock
 **/*.rs.bk
 
 # Soroban / WASM build artifacts
