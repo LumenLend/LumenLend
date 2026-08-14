@@ -760,32 +760,6 @@ A bug bounty program will be established prior to mainnet launch. Responsible di
 
 ---
 
-## SCF Grant Proposal
-
-LumenLend is applying for a **Stellar Community Fund (SCF) Build Award**.
-
-**Grant amount requested:** $75,000 USD (paid in USDC)
-
-**Milestone breakdown:**
-
-| Milestone | Deliverable | Amount | Timeline |
-|---|---|---|---|
-| M1 | Core contracts deployed on testnet with test suite | $20,000 | Week 4 |
-| M2 | Frontend MVP + wallet integration on testnet | $15,000 | Week 7 |
-| M3 | Security audit completed, findings resolved | $20,000 | Week 10 |
-| M4 | Mainnet deployment + documentation site live | $20,000 | Week 12 |
-
-**Why LumenLend deserves SCF funding:**
-- Fills the most critical DeFi infrastructure gap on Stellar
-- Directly enables the next generation of Soroban DeFi protocols
-- 100% open source — benefits the entire ecosystem
-- Experienced team with smart contract and Stellar ecosystem background
-- Conservative, security-first approach with mandatory audit before mainnet
-
-For the full grant proposal, see [`docs/scf_proposal.md`](docs/scf_proposal.md).
-
----
-
 ## Contributing
 
 Contributions are welcome! LumenLend is an open-source protocol and community participation is encouraged.
