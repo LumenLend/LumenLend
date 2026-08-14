@@ -5,6 +5,10 @@ Plan.md
 target/
 **/*.rs.bk
 
+# Soroban test environment ledger snapshots
+test_snapshots/
+**/test_snapshots/
+
 # Soroban / WASM build artifacts
 *.wasm
 
