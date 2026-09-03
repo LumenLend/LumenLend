@@ -2,7 +2,10 @@
 
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 
+mod deposit;
+mod math;
 mod storage;
+mod token;
 
 use storage::DataKey;
 
@@ -68,8 +71,8 @@ impl LendingPoolTrait for LendingPool {
         storage.set(&DataKey::InterestRateModel, &interest_rate_model);
     }
 
-    fn deposit(_env: Env, _depositor: Address, _asset: Address, _amount: i128) {
-        panic!("LendingPool: not implemented");
+    fn deposit(env: Env, depositor: Address, asset: Address, amount: i128) {
+        deposit::deposit(env, depositor, asset, amount)
     }
 
     fn borrow(_env: Env, _borrower: Address, _asset: Address, _amount: i128) {

@@ -780,6 +780,8 @@ dependencies = [
 name = "lending-pool"
 version = "0.1.0"
 dependencies = [
+ "interest-rate-model",
+ "ltoken",
  "soroban-sdk",
 ]
 

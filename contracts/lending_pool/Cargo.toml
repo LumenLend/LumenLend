@@ -9,3 +9,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 soroban-sdk.workspace = true
+ltoken = { path = "../ltoken" }
+interest-rate-model = { path = "../interest_rate_model" }
