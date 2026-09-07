@@ -34,7 +34,12 @@ pub fn repay(env: Env, repayer: Address, asset: Address, amount: i128) {
 
     // Transfer asset from repayer to contract
     let token_client = TokenClient::new(&env, &config.ltoken_address);
-    token_client.transfer_from(&env.current_contract_address(), &repayer, &amount);
+    token_client.transfer_from(
+        &env.current_contract_address(),
+        &repayer,
+        &env.current_contract_address(),
+        &amount,
+    );
 
     // Update state
     state.total_borrows -= repay_amount;

@@ -1,6 +1,6 @@
 use soroban_sdk::{Env, Address};
 
-use crate::{math::mul_div, math::SCALE, storage, token::TokenClient};
+use crate::{health, math::mul_div, math::SCALE, storage, token::TokenClient};
 
 /// Withdraw deposited collateral (up to available liquidity).
 ///

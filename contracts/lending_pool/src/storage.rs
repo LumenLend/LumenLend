@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Env};
+use soroban_sdk::{contracttype, Address, Env, Vec};
 
 /// Per-user position snapshot. Instances of this struct are reconstructed on
 /// demand from the per-asset storage keys below (see `get_user_deposit`,
@@ -43,10 +43,12 @@ pub enum DataKey {
     Admin,
     Oracle,
     InterestRateModel,
+    LiquidationEngine,
     AssetConfig(Address),
     AssetState(Address),
     UserDeposit(Address, Address),
     UserBorrow(Address, Address),
+    AssetList,
 }
 
 // ---------------------------------------------------------------------------
@@ -145,4 +147,41 @@ pub fn write_interest_rate_model(env: &Env, irm: &Address) {
     env.storage()
         .instance()
         .set(&DataKey::InterestRateModel, irm);
+}
+
+pub fn read_liquidation_engine(env: &Env) -> Option<Address> {
+    env.storage().instance().get(&DataKey::LiquidationEngine)
+}
+
+pub fn write_liquidation_engine(env: &Env, engine: &Address) {
+    env.storage().instance().set(&DataKey::LiquidationEngine, engine);
+}
+
+// ---------------------------------------------------------------------------
+// AssetList helpers — a persistent Vec<Address> of all registered assets
+// ---------------------------------------------------------------------------
+
+pub fn get_asset_list(env: &Env) -> Option<Vec<Address>> {
+    env.storage().instance().get(&DataKey::AssetList)
+}
+
+pub fn set_asset_list(env: &Env, assets: &Vec<Address>) {
+    env.storage().instance().set(&DataKey::AssetList, assets);
+}
+
+pub fn add_to_asset_list(env: &Env, asset: &Address) {
+    let mut list: Vec<Address> = env
+        .storage()
+        .instance()
+        .get(&DataKey::AssetList)
+        .unwrap_or_else(|| Vec::new(env));
+    list.push_back(asset.clone());
+    env.storage().instance().set(&DataKey::AssetList, &list);
+}
+
+/// Update the ltoken_address for a given asset in its AssetConfig.
+pub fn update_ltoken_address(env: &Env, asset: &Address, ltoken: &Address) {
+    let mut config = read_asset_config(env, asset).expect("Asset not registered");
+    config.ltoken_address = ltoken.clone();
+    write_asset_config(env, asset, &config);
 }

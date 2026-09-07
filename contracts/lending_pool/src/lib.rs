@@ -2,12 +2,16 @@
 
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 
-mod deposit;
-mod math;
-mod storage;
-mod token;
+pub mod borrow;
+pub mod deposit;
+pub mod health;
+pub mod math;
+pub mod repay;
+pub mod storage;
+pub mod token;
+pub mod withdraw;
 
-use storage::DataKey;
+use storage::{read_asset_config, DataKey};
 
 #[contract]
 pub struct LendingPool;
@@ -52,6 +56,31 @@ pub trait LendingPoolTrait {
         liquidation_bonus: u32,     // e.g., 500 = 5%
         reserve_factor: u32,        // e.g., 1000 = 10%
     );
+
+    /// Set the LiquidationEngine contract address (admin only).
+    fn set_liquidation_engine(env: Env, engine: Address);
+
+    /// Execute a liquidation: repays borrower debt and transfers collateral
+    /// to the liquidator. Callable only by the registered LiquidationEngine.
+    fn execute_liquidation(
+        env: Env,
+        liquidator: Address,
+        borrower: Address,
+        debt_asset: Address,
+        collateral_asset: Address,
+        debt_amount: i128,
+        collateral_amount: i128,
+    );
+
+    /// Returns a user's outstanding borrow for an asset (18 decimal).
+    fn get_user_borrow(env: Env, user: Address, asset: Address) -> i128;
+
+    /// Returns the USD price of an asset in 18-decimal fixed-point by
+    /// delegating to the configured PriceOracle.
+    fn get_asset_price(env: Env, asset: Address) -> i128;
+
+    /// Returns the liquidation bonus (basis points) for an asset.
+    fn get_asset_liquidation_bonus(env: Env, asset: Address) -> u32;
 }
 
 #[contractimpl]
@@ -75,28 +104,28 @@ impl LendingPoolTrait for LendingPool {
         deposit::deposit(env, depositor, asset, amount)
     }
 
-    fn borrow(_env: Env, _borrower: Address, _asset: Address, _amount: i128) {
-        panic!("LendingPool: not implemented");
+    fn borrow(env: Env, borrower: Address, asset: Address, amount: i128) {
+        borrow::borrow(env, borrower, asset, amount)
     }
 
-    fn repay(_env: Env, _repayer: Address, _asset: Address, _amount: i128) {
-        panic!("LendingPool: not implemented");
+    fn repay(env: Env, repayer: Address, asset: Address, amount: i128) {
+        repay::repay(env, repayer, asset, amount)
     }
 
-    fn withdraw(_env: Env, _withdrawer: Address, _asset: Address, _amount: i128) {
-        panic!("LendingPool: not implemented");
+    fn withdraw(env: Env, withdrawer: Address, asset: Address, amount: i128) {
+        withdraw::withdraw(env, withdrawer, asset, amount)
     }
 
-    fn get_health_factor(_env: Env, _user: Address) -> i128 {
-        panic!("LendingPool: not implemented");
+    fn get_health_factor(env: Env, user: Address) -> i128 {
+        health::get_health_factor(&env, &user)
     }
 
-    fn get_total_collateral_usd(_env: Env, _user: Address) -> i128 {
-        0
+    fn get_total_collateral_usd(env: Env, user: Address) -> i128 {
+        health::get_total_collateral_usd(&env, &user)
     }
 
-    fn get_total_debt_usd(_env: Env, _user: Address) -> i128 {
-        0
+    fn get_total_debt_usd(env: Env, user: Address) -> i128 {
+        health::get_total_debt_usd(&env, &user)
     }
 
     fn add_asset(
@@ -133,5 +162,72 @@ impl LendingPoolTrait for LendingPool {
             is_active: true,
         };
         storage::write_asset_config(&env, &asset, &config);
+
+        // Initialize asset state if not present
+        if !env.storage().instance().has(&DataKey::AssetState(asset.clone())) {
+            let state = storage::AssetState {
+                total_deposits: 0,
+                total_borrows: 0,
+                last_update_timestamp: env.ledger().timestamp(),
+                borrow_index: math::SCALE,
+                deposit_index: math::SCALE,
+            };
+            storage::write_asset_state(&env, &asset, &state);
+        }
+
+        // Add to asset list
+        storage::add_to_asset_list(&env, &asset);
+    }
+
+    fn set_liquidation_engine(env: Env, engine: Address) {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .expect("LendingPool: not initialized");
+        admin.require_auth();
+        storage::write_liquidation_engine(&env, &engine);
+    }
+
+    fn execute_liquidation(
+        env: Env,
+        liquidator: Address,
+        borrower: Address,
+        debt_asset: Address,
+        collateral_asset: Address,
+        debt_amount: i128,
+        collateral_amount: i128,
+    ) {
+        // Only the registered LiquidationEngine may invoke this.
+        let engine: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::LiquidationEngine)
+            .expect("LendingPool: liquidation engine not set");
+        engine.require_auth();
+        liquidator.require_auth();
+
+        health::execute_liquidation(
+            &env,
+            &liquidator,
+            &borrower,
+            &debt_asset,
+            &collateral_asset,
+            debt_amount,
+            collateral_amount,
+        );
+    }
+
+    fn get_user_borrow(env: Env, user: Address, asset: Address) -> i128 {
+        storage::get_user_borrow(&env, &user, &asset)
+    }
+
+    fn get_asset_price(env: Env, asset: Address) -> i128 {
+        health::get_price(&env, &asset)
+    }
+
+    fn get_asset_liquidation_bonus(env: Env, asset: Address) -> u32 {
+        let config = read_asset_config(&env, &asset).expect("Asset not registered");
+        config.liquidation_bonus
     }
 }
