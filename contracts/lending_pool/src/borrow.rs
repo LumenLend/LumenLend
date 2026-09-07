@@ -76,8 +76,12 @@ pub fn borrow(env: Env, borrower: Address, asset: Address, amount: i128) {
     }
 
     // Transfer asset from contract to borrower
-    let token_client = TokenClient::new(&env, &config.ltoken_address);
-    token_client.transfer(&borrower, &amount);
+    let token_client = TokenClient::new(&env, &asset);
+    token_client.transfer(
+        &env.current_contract_address(),
+        &borrower,
+        &amount,
+    );
 
     // Update state
     let mut state = storage::read_asset_state(&env, &asset).expect("Asset state not initialized");

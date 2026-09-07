@@ -1,48 +1,44 @@
-// Deposit tests for LendingPool
+mod common;
 
-use soroban_sdk::{testutils::Address as TestAddress, Env};
+use soroban_sdk::{testutils::Address as TestAddress, Address, Env};
 use lending_pool::{LendingPool, LendingPoolClient};
 use interest_rate_model::{InterestRateModel, InterestRateModelClient};
 
-fn irm_client(env: &Env) -> InterestRateModelClient {
+use common::{deploy_market, MockOracle, MockTokenClient};
+
+fn setup(env: &Env) -> (LendingPoolClient, Address, Address, Address) {
+    let admin = Address::generate(env);
+    let user = Address::generate(env);
+
     let irm_id = env.register_contract(None, InterestRateModel);
-    InterestRateModelClient::new(&env, &irm_id)
-}
+    let irm = InterestRateModelClient::new(env, &irm_id);
+    let base: u32 = 200;
+    let slope1: u32 = 1000;
+    let slope2: u32 = 30000;
+    let optimal: u32 = 8000;
+    irm.initialize(&base, &slope1, &slope2, &optimal);
 
-fn irm_init(irm: &InterestRateModelClient, env: &Env) {
-    irm.initialize(
-        env.clone(),
-        200,     // base_rate = 2%
-        1000,    // slope1 = 10% at optimal
-        30000,   // slope2 = 300% at 100%
-        8000,    // optimal_utilization = 80%
-    );
-}
+    let oracle_id = env.register_contract(None, MockOracle);
 
-fn supported_asset(env: &Env) -> (TestAddress, u32, u32, u32, u32) {
-    let asset = TestAddress::generate(env);
-    (asset, 7500, 8000, 500, 1000)
-}
+    let lp = LendingPoolClient::new(env, &env.register_contract(None, LendingPool));
+    lp.initialize(&admin, &oracle_id, &irm_id);
 
-fn lending_pool_client(env: &Env, irm: &InterestRateModelClient) -> LendingPoolClient {
-    let lp_id = env.register_contract(None, LendingPool);
-    LendingPoolClient::new(&env, &lp_id)
+    let asset = Address::generate(env);
+    let ltoken_id = deploy_market(env, &lp.address, &asset);
+    let token = MockTokenClient::new(env, &asset);
+
+    env.mock_all_auths();
+    token.mint(&admin, &100_000_000_000_000_000_000i128);
+    lp.add_asset(&asset, &ltoken_id, &7500, &8000, &500, &1000);
+
+    (lp, admin, asset, user)
 }
 
 #[test]
 #[should_panic]
 fn test_deposit_zero_amount_fails() {
     let env = Env::default();
-    let admin = TestAddress::generate(&env);
-    let oracle = TestAddress::generate(&env);
-    let user = TestAddress::generate(&env);
-
-    let irm = irm_client(&env);
-    irm_init(&irm, &env);
-
-    let (asset, _ltv, _lt, _lb, _rf) = supported_asset(&env);
-    let lp = lending_pool_client(&env, &irm);
-
-    let amount = 0i128;
-    lp.deposit(env.clone(), user.clone(), asset.clone(), amount); // Should panic
+    let (lp, _admin, asset, user) = setup(&env);
+    env.mock_all_auths();
+    lp.deposit(&user, &asset, &0);
 }

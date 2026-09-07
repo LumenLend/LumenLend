@@ -51,6 +51,7 @@ pub trait LendingPoolTrait {
     fn add_asset(
         env: Env,
         asset: Address,
+        ltoken_address: Address,
         ltv: u32,               // e.g., 7500 = 75%
         liquidation_threshold: u32, // e.g., 8000 = 80%
         liquidation_bonus: u32,     // e.g., 500 = 5%
@@ -131,6 +132,7 @@ impl LendingPoolTrait for LendingPool {
     fn add_asset(
         env: Env,
         asset: Address,
+        ltoken_address: Address,
         ltv: u32,
         liquidation_threshold: u32,
         liquidation_bonus: u32,
@@ -154,11 +156,7 @@ impl LendingPoolTrait for LendingPool {
             liquidation_threshold,
             liquidation_bonus,
             reserve_factor,
-            // Placeholder until the per-asset lToken is deployed and registered.
-            ltoken_address: Address::from_string(&String::from_str(
-                &env,
-                "GD5GCVMRXCLGELRFJECHWZ46Y3LIIFSJ3SLBWWY5MP33MOXSDTISRUKA",
-            )),
+            ltoken_address,
             is_active: true,
         };
         storage::write_asset_config(&env, &asset, &config);
