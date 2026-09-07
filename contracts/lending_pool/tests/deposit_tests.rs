@@ -6,7 +6,7 @@ use interest_rate_model::{InterestRateModel, InterestRateModelClient};
 
 use common::{deploy_market, MockOracle, MockTokenClient};
 
-fn setup(env: &Env) -> (LendingPoolClient, Address, Address, Address) {
+fn setup(env: &Env) -> (LendingPoolClient<'_>, Address, Address, Address) {
     let admin = Address::generate(env);
     let user = Address::generate(env);
 

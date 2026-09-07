@@ -1,9 +1,10 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
+use soroban_sdk::{contract, contractimpl, Address, Env};
 
 pub mod borrow;
 pub mod deposit;
+pub mod external;
 pub mod health;
 pub mod math;
 pub mod repay;

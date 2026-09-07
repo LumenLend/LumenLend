@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Env, Symbol};
+use soroban_sdk::{Address, Env};
 
-use crate::{math::{mul_div, SCALE}, storage, token::TokenClient};
+use crate::{external::InterestRateModelClient, math::{mul_div, SCALE}, external::LTokenClient, storage, token::TokenClient};
 
 /// Accrue interest on the asset pool before any state-changing operation.
 ///
@@ -18,7 +18,6 @@ fn accrue_interest(env: &Env, asset: &Address) {
     }
 
     let irm_address = storage::read_interest_rate_model(env).expect("IRM not set");
-    use interest_rate_model::InterestRateModelClient;
     let irm = InterestRateModelClient::new(env, &irm_address);
 
     let borrow_rate = irm.get_borrow_rate(&state.total_deposits, &state.total_borrows);
@@ -60,10 +59,9 @@ pub fn deposit(env: Env, depositor: Address, asset: Address, amount: i128) {
     token_client.transfer_from(&depositor, &depositor, &env.current_contract_address(), &amount);
 
     // Calculate lTokens to mint and mint them
-    use ltoken::LTokenClient;
     let ltoken_client = LTokenClient::new(&env, &config.ltoken_address);
     let exchange_rate = ltoken_client.exchange_rate();
-    let ltoken_amount = (amount * 1_000_000_000_000_000_000i128) / exchange_rate;
+    let ltoken_amount = mul_div(amount, SCALE, exchange_rate);
 
     ltoken_client.mint(&depositor, &ltoken_amount);
 

@@ -26,7 +26,7 @@ impl MockReflector {
     }
 }
 
-fn setup(env: &Env) -> (PriceOracleClient, Address) {
+fn setup(env: &Env) -> (PriceOracleClient<'_>, Address) {
     let reflector = env.register_contract(None, MockReflector);
     let oracle = PriceOracleClient::new(env, &env.register_contract(None, PriceOracle));
     oracle.initialize(&reflector);

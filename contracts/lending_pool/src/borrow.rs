@@ -18,8 +18,7 @@ fn accrue_interest(env: &Env, asset: &Address) {
     }
 
     let irm_address = storage::read_interest_rate_model(env).expect("IRM not set");
-    use interest_rate_model::InterestRateModelClient;
-    let irm = InterestRateModelClient::new(env, &irm_address);
+    let irm = crate::external::InterestRateModelClient::new(env, &irm_address);
 
     let borrow_rate = irm.get_borrow_rate(&state.total_deposits, &state.total_borrows);
     let seconds_per_year: i128 = 31_536_000i128;

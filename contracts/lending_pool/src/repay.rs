@@ -21,7 +21,6 @@ pub fn repay(env: Env, repayer: Address, asset: Address, amount: i128) {
     accrue_interest(&env, &asset);
 
     // Get asset config and state
-    let config = storage::read_asset_config(&env, &asset).expect("Asset not registered");
     let mut state = storage::read_asset_state(&env, &asset).expect("Asset state not initialized");
 
     // Get user's current borrow and cap at outstanding amount
@@ -70,8 +69,7 @@ fn accrue_interest(env: &Env, asset: &Address) {
     }
 
     let irm_address = storage::read_interest_rate_model(env).expect("IRM not set");
-    use interest_rate_model::InterestRateModelClient;
-    let irm = InterestRateModelClient::new(env, &irm_address);
+    let irm = crate::external::InterestRateModelClient::new(env, &irm_address);
 
     let borrow_rate = irm.get_borrow_rate(&state.total_deposits, &state.total_borrows);
     let seconds_per_year: i128 = 31_536_000i128;

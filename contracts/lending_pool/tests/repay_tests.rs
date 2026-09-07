@@ -9,7 +9,7 @@ use common::{deploy_market, MockOracle, MockTokenClient};
 /// Shared setup: registers the IRM, LendingPool, MockOracle, a MockToken
 /// (as the underlying asset), and a real LToken.
 /// Returns `(lp, admin, asset, user)`.
-fn setup(env: &Env) -> (LendingPoolClient, Address, Address, Address) {
+fn setup(env: &Env) -> (LendingPoolClient<'_>, Address, Address, Address) {
     let admin = Address::generate(env);
     let user = Address::generate(env);
 

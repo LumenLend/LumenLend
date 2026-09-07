@@ -33,12 +33,13 @@ pub fn get_health_factor(env: &Env, user: &Address) -> i128 {
         let price = get_price(env, &asset);
 
         if user_deposit > 0 {
-            let weighted = mul_div(user_deposit * price, config.liquidation_threshold as i128, 10_000);
+            let deposit_usd = mul_div(user_deposit, price, SCALE);
+            let weighted = mul_div(deposit_usd, config.liquidation_threshold as i128, 10_000);
             total_collateral_weighted += weighted;
         }
 
         if user_borrow > 0 {
-            total_debt += user_borrow * price;
+            total_debt += mul_div(user_borrow, price, SCALE);
         }
     }
 
@@ -61,7 +62,7 @@ pub fn get_total_collateral_usd(env: &Env, user: &Address) -> i128 {
         let price = get_price(env, &asset);
 
         if user_deposit > 0 {
-            total += user_deposit * price;
+            total += mul_div(user_deposit, price, SCALE);
         }
     }
 
@@ -80,7 +81,7 @@ pub fn get_total_debt_usd(env: &Env, user: &Address) -> i128 {
         let price = get_price(env, &asset);
 
         if user_borrow > 0 {
-            total += user_borrow * price;
+            total += mul_div(user_borrow, price, SCALE);
         }
     }
 

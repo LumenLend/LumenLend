@@ -9,5 +9,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 soroban-sdk.workspace = true
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
 ltoken = { path = "../ltoken" }
 interest-rate-model = { path = "../interest_rate_model" }
+liquidation-engine = { path = "../liquidation_engine" }
