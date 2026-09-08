@@ -720,7 +720,7 @@ All DeFi protocols carry inherent risks. Users should understand the following b
 
 ### Bug Bounty
 
-A bug bounty program will be established prior to mainnet launch. Responsible disclosure: open a **private** security advisory on GitHub.
+A bug bounty program will be established prior to mainnet launch. Responsible disclosure: see [**SECURITY.md**](SECURITY.md) and open a **private** security advisory on GitHub.
 
 ---
 
@@ -763,6 +763,15 @@ A bug bounty program will be established prior to mainnet launch. Responsible di
 ## Contributing
 
 Contributions are welcome! LumenLend is an open-source protocol and community participation is encouraged.
+
+Please read the full guide in [**CONTRIBUTING.md**](CONTRIBUTING.md), and note all participants must follow our [**Code of Conduct**](CODE_OF_CONDUCT.md). If you believe you have found a security issue, review [**SECURITY.md**](SECURITY.md) **before** opening an issue.
+
+**Protocol documentation:**
+- [Architecture](docs/architecture.md)
+- [Interest Rate Model](docs/interest_rate_model.md)
+- [Liquidation Mechanism](docs/liquidation.md)
+- [Risk Parameters](docs/risk_parameters.md)
+- [SCF Grant Proposal](docs/scf_proposal.md)
 
 ### How to Contribute
 
